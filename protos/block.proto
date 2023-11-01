@@ -27,3 +27,16 @@ message Block {
     string transactions_root = 19;
     repeated string uncles = 20;
 }
+
+message BlockNumberRequest{
+    string block_number = 1;
+}
+
+message BlockHashRequest{
+    string block_hash = 1;
+}
+
+service BlockService{
+    rpc FetchBlockByNumber(BlockNumberRequest) returns (Block) {}
+    rpc FetchBlockByHash(BlockHashRequest) returns (Block){}
+}
