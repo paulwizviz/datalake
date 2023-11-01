@@ -1,0 +1,29 @@
+
+syntax = "proto3";
+
+package block;
+
+option go_package = "github.com/paulwizviz/datalake/internal/block";
+
+message Block {
+    string base_fee_per_gas = 1;
+    string difficulty = 2;
+    bytes extra_data = 3;
+    uint64 gas_limit = 4;
+    uint64 gas_used = 5;
+    string hash = 6;
+    bytes logs_bloom = 7;
+    string miner = 8;
+    string mix_hash = 9;
+    uint64 nonce = 10;
+    string number = 11;
+    string parent_hash = 12;
+    string sha3_uncles = 13;
+    string size = 14;
+    string state_root = 15;
+    uint64 timestamp = 16;
+    string total_difficulty = 17;
+    repeated string transactions = 18;
+    string transactions_root = 19;
+    repeated string uncles = 20;
+}
