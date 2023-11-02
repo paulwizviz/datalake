@@ -1,5 +1,5 @@
 
-FROM golang:alpine3.18
+FROM golang:bookworm AS builder
 
 WORKDIR /opt
 
@@ -10,6 +10,6 @@ COPY ./go.sum ./go.sum
 
 RUN go build -o /opt/build/client /opt/cmd/client
 
-FROM alpine:3.18
+FROM ubuntu:22.04
 
 COPY --from=builder /opt/build/client /usr/local/bin/client

@@ -20,8 +20,7 @@ func fetchByHash(ctx context.Context, conn *pgx.Conn, bcs block.BlockServiceClie
 
 	resp, err := bcs.FetchBlockByHash(ctx, req)
 	if err != nil {
-		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
-		if err != nil {
+		if err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, ""); err != nil {
 			log.Println("Unable to insert sync event")
 		}
 		log.Fatal("Unable to fetch block", err)
@@ -29,8 +28,7 @@ func fetchByHash(ctx context.Context, conn *pgx.Conn, bcs block.BlockServiceClie
 
 	err = dbops.InsertIntoBlockHeaders(ctx, conn, resp)
 	if err != nil {
-		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
-		if err != nil {
+		if err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, ""); err != nil {
 			log.Println("Unable to insert sync event")
 		}
 		log.Fatal("Unable to insert block headers", err)
@@ -49,8 +47,7 @@ func fetchByNumber(ctx context.Context, conn *pgx.Conn, bcs block.BlockServiceCl
 
 	resp, err := bcs.FetchBlockByNumber(ctx, req)
 	if err != nil {
-		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
-		if err != nil {
+		if err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, ""); err != nil {
 			log.Println("Unable to insert sync event")
 		}
 		log.Fatal("Unable to fetch block", err)
@@ -58,8 +55,7 @@ func fetchByNumber(ctx context.Context, conn *pgx.Conn, bcs block.BlockServiceCl
 
 	err = dbops.InsertIntoBlockHeaders(ctx, conn, resp)
 	if err != nil {
-		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
-		if err != nil {
+		if err = dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, ""); err != nil {
 			log.Println("Unable to insert sync event")
 		}
 		log.Fatal("Unable to insert block headers", err)
@@ -73,7 +69,11 @@ func fetchByNumber(ctx context.Context, conn *pgx.Conn, bcs block.BlockServiceCl
 
 func main() {
 
-	url := "postgres://postgres:postgres@localhost:5432/postgres"
+	url := os.Getenv("DB_URL")
+	if url == "" {
+		url = "postgres://postgres:postgres@localhost:5432/postgres"
+	}
+
 	dbconn, err := dbops.Connection(url)
 	if err != nil {
 		log.Fatal(err)
@@ -86,8 +86,9 @@ func main() {
 		log.Println(err)
 	}
 
+	grpcServerHost := os.Getenv("GRPC_SERVER")
 	port := 9000
-	conn, err := grpc.Dial(fmt.Sprintf(":%v", port), grpc.WithInsecure())
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%v", grpcServerHost, port), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Unable to setup connection on Port: %v", port)
 	}

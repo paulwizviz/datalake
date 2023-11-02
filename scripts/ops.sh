@@ -43,12 +43,23 @@ function network(){
     esac
 }
 
+function client(){
+    docker run -it --rm \
+           -e GRPC_SERVER="grpcserver" \
+           -e DB_URL="postgres://postgres:postgres@defaultserver:5432/postgres" \
+           --network=$NETWORK \
+           $GRPC_CLIENT_IMAGE /bin/bash
+}
+
 case $COMMAND in
     "image")
         image $SUBCOMMAND
         ;;
     "network")
         network $SUBCOMMAND
+        ;;
+    "client")
+        client
         ;;
     *)
         echo "$0 <command>
