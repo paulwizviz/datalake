@@ -4,12 +4,72 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/paulwizviz/datalake/internal/block"
 	"github.com/paulwizviz/datalake/internal/dbmodel"
 	"github.com/paulwizviz/datalake/internal/dbops"
 	"google.golang.org/grpc"
 )
+
+func fetchByHash(ctx context.Context, conn *pgx.Conn, bcs block.BlockServiceClient, blkHash string) {
+	req := &block.BlockHashRequest{
+		BlockHash: blkHash,
+	}
+
+	resp, err := bcs.FetchBlockByHash(ctx, req)
+	if err != nil {
+		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
+		if err != nil {
+			log.Println("Unable to insert sync event")
+		}
+		log.Fatal("Unable to fetch block", err)
+	}
+
+	err = dbops.InsertIntoBlockHeaders(ctx, conn, resp)
+	if err != nil {
+		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
+		if err != nil {
+			log.Println("Unable to insert sync event")
+		}
+		log.Fatal("Unable to insert block headers", err)
+	}
+
+	err = dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockIndexVal, resp.Hash)
+	if err != nil {
+		log.Println("Unable to insert sync event")
+	}
+}
+
+func fetchByNumber(ctx context.Context, conn *pgx.Conn, bcs block.BlockServiceClient, num string) {
+	req := &block.BlockNumberRequest{
+		BlockNumber: num,
+	}
+
+	resp, err := bcs.FetchBlockByNumber(ctx, req)
+	if err != nil {
+		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
+		if err != nil {
+			log.Println("Unable to insert sync event")
+		}
+		log.Fatal("Unable to fetch block", err)
+	}
+
+	err = dbops.InsertIntoBlockHeaders(ctx, conn, resp)
+	if err != nil {
+		err := dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockNotFound, "")
+		if err != nil {
+			log.Println("Unable to insert sync event")
+		}
+		log.Fatal("Unable to insert block headers", err)
+	}
+
+	err = dbops.InsertIntoSyncEvent(ctx, conn, dbmodel.BlockIndexVal, resp.Hash)
+	if err != nil {
+		log.Println("Unable to insert sync event")
+	}
+}
 
 func main() {
 
@@ -34,30 +94,16 @@ func main() {
 	defer conn.Close()
 
 	c := block.NewBlockServiceClient(conn)
-	req := &block.BlockHashRequest{
-		BlockHash: "testdata/0x0e07da487d1c634a6ad96f62cef0f9cf52fc6a3f9df4d90e4f9bf58f844dc25c",
+
+	if len(os.Args) != 3 {
+		fmt.Println(os.Args)
+		log.Fatal("Insufficient Aregument")
+	}
+	if os.Args[1] == "hash" {
+		fetchByHash(ctx, dbconn, c, os.Args[2])
+	}
+	if os.Args[1] == "number" {
+		fetchByNumber(ctx, dbconn, c, os.Args[2])
 	}
 
-	resp, err := c.FetchBlockByHash(context.TODO(), req)
-	if err != nil {
-		err := dbops.InsertIntoSyncEvent(context.TODO(), dbconn, dbmodel.BlockNotFound, "")
-		if err != nil {
-			log.Println("Unable to insert sync event")
-		}
-		log.Fatal("Unable to fetch block", err)
-	}
-
-	err = dbops.InsertIntoBlockHeaders(context.Background(), dbconn, resp)
-	if err != nil {
-		err := dbops.InsertIntoSyncEvent(context.TODO(), dbconn, dbmodel.BlockNotFound, "")
-		if err != nil {
-			log.Println("Unable to insert sync event")
-		}
-		log.Fatal("Unable to insert block headers", err)
-	}
-
-	err = dbops.InsertIntoSyncEvent(context.TODO(), dbconn, dbmodel.BlockIndexVal, resp.Hash)
-	if err != nil {
-		log.Println("Unable to insert sync event")
-	}
 }

@@ -8,6 +8,8 @@ services:
     command: /usr/local/bin/server
     ports:
       - 9000:9000
+    volumes:
+      - $PWD/testdata:/var/blocks
     networks:
       - local
 

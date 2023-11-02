@@ -14,12 +14,11 @@ import (
 type Handler struct{}
 
 func (h *Handler) FetchBlockByNumber(ctx context.Context, in *block.BlockNumberRequest) (*block.Block, error) {
-	return &block.Block{
-		Difficulty: "1",
-	}, nil
+	cache := "/var/blocks"
+	return blockutil.ReadBlockByNumber(cache, in.BlockNumber)
 }
 func (h *Handler) FetchBlockByHash(ctx context.Context, in *block.BlockHashRequest) (*block.Block, error) {
-	return blockutil.ReadBlockByKey(blockutil.S3URL, blockutil.ObjectKey(in.BlockHash))
+	return blockutil.ReadBlockByHash(blockutil.S3URL, blockutil.ObjectKey(in.BlockHash))
 }
 
 func main() {
