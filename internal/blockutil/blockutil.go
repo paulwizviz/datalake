@@ -2,8 +2,10 @@ package blockutil
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/paulwizviz/datalake/internal/block"
 	"google.golang.org/protobuf/proto"
@@ -78,7 +80,13 @@ func ReadObjectByKey(key ObjectKey) ([]byte, error) {
 	return body, nil
 }
 
-func ReadBlockByKey(url string, key ObjectKey) (*block.Block, error) {
+func GetBlockNumber(b []byte) string {
+	var blk block.Block
+	proto.Unmarshal(b, &blk)
+	return blk.Number
+}
+
+func ReadBlockByHash(url string, key ObjectKey) (*block.Block, error) {
 	objectURL := url + "/" + string(key) + ".datalake"
 
 	resp, err := http.Get(objectURL)
@@ -97,5 +105,18 @@ func ReadBlockByKey(url string, key ObjectKey) (*block.Block, error) {
 		return nil, err
 	}
 
+	return &blk, nil
+}
+
+func ReadBlockByNumber(cache string, num string) (*block.Block, error) {
+	content, err := os.ReadFile(fmt.Sprintf("%s/%s.pb", cache, num))
+	if err != nil {
+		return nil, err
+	}
+	var blk block.Block
+	err = proto.Unmarshal(content, &blk)
+	if err != nil {
+		return nil, err
+	}
 	return &blk, nil
 }
