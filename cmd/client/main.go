@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/paulwizviz/datalake/internal/block"
+	"github.com/paulwizviz/datalake/internal/dbmodel"
 	"github.com/paulwizviz/datalake/internal/dbops"
 	"google.golang.org/grpc"
 )
@@ -33,13 +34,30 @@ func main() {
 	defer conn.Close()
 
 	c := block.NewBlockServiceClient(conn)
-	req := block.BlockNumberRequest{
-		BlockNumber: "123",
+	req := &block.BlockHashRequest{
+		BlockHash: "testdata/0x0e07da487d1c634a6ad96f62cef0f9cf52fc6a3f9df4d90e4f9bf58f844dc25c",
 	}
 
-	resp, err := c.FetchBlockByNumber(context.TODO(), &req)
+	resp, err := c.FetchBlockByHash(context.TODO(), req)
 	if err != nil {
-		log.Fatalf("Unable to fetch block by number: %v", err)
+		err := dbops.InsertIntoSyncEvent(context.TODO(), dbconn, dbmodel.BlockNotFound, "")
+		if err != nil {
+			log.Println("Unable to insert sync event")
+		}
+		log.Fatal("Unable to fetch block", err)
 	}
-	fmt.Println(resp)
+
+	err = dbops.InsertIntoBlockHeaders(context.Background(), dbconn, resp)
+	if err != nil {
+		err := dbops.InsertIntoSyncEvent(context.TODO(), dbconn, dbmodel.BlockNotFound, "")
+		if err != nil {
+			log.Println("Unable to insert sync event")
+		}
+		log.Fatal("Unable to insert block headers", err)
+	}
+
+	err = dbops.InsertIntoSyncEvent(context.TODO(), dbconn, dbmodel.BlockIndexVal, resp.Hash)
+	if err != nil {
+		log.Println("Unable to insert sync event")
+	}
 }

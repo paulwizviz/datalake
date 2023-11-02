@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/paulwizviz/datalake/internal/block"
+	"github.com/paulwizviz/datalake/internal/blockutil"
 	"google.golang.org/grpc"
 )
 
@@ -18,9 +19,7 @@ func (h *Handler) FetchBlockByNumber(ctx context.Context, in *block.BlockNumberR
 	}, nil
 }
 func (h *Handler) FetchBlockByHash(ctx context.Context, in *block.BlockHashRequest) (*block.Block, error) {
-	return &block.Block{
-		Difficulty: "1",
-	}, nil
+	return blockutil.ReadBlockByKey(blockutil.S3URL, blockutil.ObjectKey(in.BlockHash))
 }
 
 func main() {
