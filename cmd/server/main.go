@@ -18,7 +18,8 @@ func (h *Handler) FetchBlockByNumber(ctx context.Context, in *block.BlockNumberR
 	return blockutil.ReadBlockByNumber(cache, in.BlockNumber)
 }
 func (h *Handler) FetchBlockByHash(ctx context.Context, in *block.BlockHashRequest) (*block.Block, error) {
-	return blockutil.ReadBlockByHash(blockutil.S3URL, blockutil.ObjectKey(in.BlockHash))
+	cache := "/var/blocks"
+	return blockutil.ReadBlockByHashC(cache, in.BlockHash)
 }
 
 func main() {
