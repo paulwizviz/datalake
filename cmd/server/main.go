@@ -25,15 +25,17 @@ func (h *Handler) FetchBlockByHash(ctx context.Context, in *block.BlockHashReque
 
 func main() {
 	port := 9000
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%v", port))
 	if err != nil {
 		log.Fatalf("Fail to get listener on port: %v. Reason: %v", port, err)
 	}
+	log.Printf("Obtaining tcp listener on port: %v", port)
 
 	h := Handler{}
 	grpcServer := grpc.NewServer()
 	block.RegisterBlockServiceServer(grpcServer, &h)
 
+	log.Printf("Starting GRPC server on port: %v", port)
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Fatalf("GRPC server failed to start on port: %v. Error: %v", port, err)

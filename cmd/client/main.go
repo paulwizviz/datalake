@@ -6,10 +6,24 @@ import (
 	"log"
 
 	"github.com/paulwizviz/datalake/internal/block"
+	"github.com/paulwizviz/datalake/internal/dbops"
 	"google.golang.org/grpc"
 )
 
 func main() {
+
+	url := "postgres://postgres:postgres@localhost:5432/postgres"
+	dbconn, err := dbops.Connection(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbconn.Close(context.Background())
+
+	ctx := context.Background()
+	err = dbops.CreateTable(ctx, dbconn)
+	if err != nil {
+		log.Println(err)
+	}
 
 	port := 9000
 	conn, err := grpc.Dial(fmt.Sprintf(":%v", port), grpc.WithInsecure())
