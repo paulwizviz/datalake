@@ -2,6 +2,15 @@ version: '3.7'
 
 services:
 
+  grpcserver:
+    image: ${GRPC_SERVER_IMAGE}
+    container_name: grpc_server
+    command: /usr/local/bin/server
+    ports:
+      - 9000:9000
+    networks:
+      - local
+
   defaultserver:
     image: postgres:15.1
     container_name: defaultserver

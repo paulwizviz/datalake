@@ -1,9 +1,28 @@
 #!/bin/bash
 
+export GRPC_SERVER_IMAGE=datalake/server:current
+export GRPC_CLIENT_IMAGE=datalake/client:current
 export NETWORK=datalake_network
 
 COMMAND="$1"
 SUBCOMMAND="$2"
+
+function image(){
+    local cmd="$1"
+    case $cmd in
+        "build")
+            docker-compose -f ./build/builder.yml build
+            ;;
+        "clean")
+            docker rmi -f ${GRPC_SERVER_IMAGE}
+            docker rmi -f ${GRPC_CLIENT_IMAGE}
+            docker rmi -f $(docker images --filter "dangling=true" -q)
+            ;;
+        *)
+            echo "image [ build | clean]"
+            ;;
+    esac
+}
 
 function network(){
     local cmd=$1
@@ -25,12 +44,16 @@ function network(){
 }
 
 case $COMMAND in
+    "image")
+        image $SUBCOMMAND
+        ;;
     "network")
         network $SUBCOMMAND
         ;;
     *)
         echo "$0 <command>
 commands:
+    image     build or clean
     network   clean, start and stop
 "
         ;;
