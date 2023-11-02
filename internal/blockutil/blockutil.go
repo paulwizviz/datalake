@@ -108,6 +108,19 @@ func ReadBlockByHash(url string, key ObjectKey) (*block.Block, error) {
 	return &blk, nil
 }
 
+func ReadBlockByHashC(cache string, hash string) (*block.Block, error) {
+	content, err := os.ReadFile(fmt.Sprintf("%s/%s.datalake.pb", cache, hash))
+	if err != nil {
+		return nil, err
+	}
+	var blk block.Block
+	err = proto.Unmarshal(content, &blk)
+	if err != nil {
+		return nil, err
+	}
+	return &blk, nil
+}
+
 func ReadBlockByNumber(cache string, num string) (*block.Block, error) {
 	content, err := os.ReadFile(fmt.Sprintf("%s/%s.pb", cache, num))
 	if err != nil {
