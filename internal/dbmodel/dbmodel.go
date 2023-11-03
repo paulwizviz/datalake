@@ -1,3 +1,5 @@
+// Package dbmodel contains statements to support DB operations
+// and Go data structures for data retrieval
 package dbmodel
 
 const (

@@ -1,3 +1,5 @@
+// Package blockutil contains operations to extract raw protobuf from S3
+// and local cache
 package blockutil
 
 import (
@@ -37,6 +39,7 @@ var S3URL = "https://s3.us-east-1.amazonaws.com/public.blocks.datalake"
 
 type ObjectKey string
 
+// ReadS3ListURL read S3 xml list
 func ReadS3ListURL(url string) ([]ObjectKey, error) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -66,6 +69,7 @@ func extractListKeys(list []byte) ([]ObjectKey, error) {
 	return keys, nil
 }
 
+// ReadObjectByKey extract object after download from S3 container
 func ReadObjectByKey(key ObjectKey) ([]byte, error) {
 	objURL := S3URL + "/" + string(key)
 	resp, err := http.Get(objURL)
@@ -80,6 +84,7 @@ func ReadObjectByKey(key ObjectKey) ([]byte, error) {
 	return body, nil
 }
 
+// GetBlockNumber extract block number from raw protobuf
 func GetBlockNumber(b []byte) string {
 	var blk block.Block
 	proto.Unmarshal(b, &blk)
@@ -108,6 +113,7 @@ func ReadBlockByHash(url string, key ObjectKey) (*block.Block, error) {
 	return &blk, nil
 }
 
+// ReadBlockByHashC extract block from a file stored in cache after download from S3
 func ReadBlockByHashC(cache string, hash string) (*block.Block, error) {
 	content, err := os.ReadFile(fmt.Sprintf("%s/%s.datalake.pb", cache, hash))
 	if err != nil {
@@ -121,6 +127,7 @@ func ReadBlockByHashC(cache string, hash string) (*block.Block, error) {
 	return &blk, nil
 }
 
+// ReadBlockByNumber extract a file named using block number from cache
 func ReadBlockByNumber(cache string, num string) (*block.Block, error) {
 	content, err := os.ReadFile(fmt.Sprintf("%s/%s.pb", cache, num))
 	if err != nil {

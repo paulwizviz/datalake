@@ -10,6 +10,7 @@ import (
 	"github.com/paulwizviz/datalake/internal/dbmodel"
 )
 
+// Connection returns postgres server connection
 func Connection(url string) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), url)
 	if err != nil {
